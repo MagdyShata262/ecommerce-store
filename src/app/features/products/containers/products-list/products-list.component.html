@@ -1,0 +1,216 @@
+<div class="products-container">
+  <!-- Header Section -->
+  <header class="header-section mb-4" aria-labelledby="productsHeading">
+    <div>
+      <h1 id="productsHeading" class="mb-0">Products</h1>
+      <div class="text-muted">
+        <span aria-live="polite">Showing {{ filteredCount() }} of {{ products().length }} products</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="onAddProduct()" [disabled]="isEditMode()">
+        <span>+ Add Product</span>
+      </button>
+      <button class="btn btn-secondary ms-2" (click)="onRefresh()" [disabled]="loading()">
+        <span>🔄 Refresh</span>
+      </button>
+    </div>
+  </header>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="search-filter-section mb-4 p-4 bg-light rounded-3 border">
+  <div class="row g-3">
+    <!-- Search Input -->
+    <div class="col-md-4">
+      <label class="form-label fw-bold">Search</label>
+      <input id="productSearch" aria-label="Search products" autocomplete="off" type="text"
+        class="form-control form-control-lg" placeholder="Search products..." [value]="searchTerm()"
+        (input)="onSearchChange(($any($event.target)).value)" />
+    </div>
+
+    <!-- Category Filter -->
+    <div class="col-md-3">
+      <label class="form-label fw-bold">Category</label>
+      <select class="form-select form-select-lg" [value]="selectedCategory()"
+        (change)="onCategoryChange(($any($event.target)).value)">
+        <option value="">All Categories</option>
+        @for (cat of categories(); track cat) {
+        <option [value]="cat">{{ cat | titlecase }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Price Range -->
+    <div class="col-md-3">
+      <label class="form-label fw-bold">Price Range: ${{ minPrice() }} - ${{ maxPrice() }}</label>
+      <div class="d-flex gap-2">
+        <input type="number" class="form-control" placeholder="Min" [value]="minPrice()"
+          (change)="onPriceRangeChange(toNumber(($any($event.target)).value), maxPrice())" />
+        <input type="number" class="form-control" placeholder="Max" [value]="maxPrice()"
+          (change)="onPriceRangeChange(minPrice(), toNumber(($any($event.target)).value))" />
+      </div>
+    </div>
+
+    <!-- Clear Filters -->
+    <div class="col-md-2 d-flex align-items-end">
+      <button class="btn btn-outline-secondary w-100" (click)="onClearFilters()"
+        [disabled]="searchTerm() === '' && selectedCategory() === '' && minPrice() === 0 && maxPrice() === 10000">
+        Clear Filters
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Sort Section -->
+<div class="sort-section mb-4 d-flex gap-2 flex-wrap align-items-center">
+  <span class="text-muted fw-bold">Sort by:</span>
+  <div class="btn-group" role="group">
+    <button type="button" class="btn" [class.btn-primary]="sortBy() === 'name'"
+      [class.btn-outline-secondary]="sortBy() !== 'name'" (click)="onSortChange('name')">
+      Name {{ getSortIndicator('name') }}
+    </button>
+    <button type="button" class="btn" [class.btn-primary]="sortBy() === 'price'"
+      [class.btn-outline-secondary]="sortBy() !== 'price'" (click)="onSortChange('price')">
+      Price {{ getSortIndicator('price') }}
+    </button>
+    <button type="button" class="btn" [class.btn-primary]="sortBy() === 'rating'"
+      [class.btn-outline-secondary]="sortBy() !== 'rating'" (click)="onSortChange('rating')">
+      Rating {{ getSortIndicator('rating') }}
+    </button>
+  </div>
+</div>
+
+<!-- Loading State -->
+@if (loading()) {
+<div class="alert alert-info alert-dismissible fade show" role="status" aria-live="polite">
+  <div class="spinner-border spinner-border-sm me-2" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <span>Loading products...</span>
+</div>
+
+<!-- Skeleton placeholders for improved perceived performance -->
+<div class="products-grid skeleton-grid" aria-hidden="true">
+  @for (i of [0, 1, 2, 3, 4, 5]; track i) {
+  <div class="card product-card h-100 shadow-sm skeleton-card">
+    <div class="product-image-wrapper skeleton-box"></div>
+    <div class="card-body">
+      <div class="skeleton-line w-75 mb-2"></div>
+      <div class="skeleton-line w-100 mb-2"></div>
+      <div class="skeleton-line w-50"></div>
+    </div>
+  </div>
+  }
+</div>
+}
+
+<!-- Error State -->
+@if (error()) {
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <strong class="d-block mb-2">⚠️ Error Loading Products</strong>
+  {{ error() }}
+  <button type="button" class="btn btn-sm btn-outline-danger mt-2" (click)="onRefresh()">
+    Try Again
+  </button>
+</div>
+}
+
+<!-- Empty State -->
+@if (!loading() && !error() && filteredCount() === 0) {
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>ℹ️ No Products Found</strong><br />
+  @if (searchTerm() || selectedCategory() || minPrice() > 0 || maxPrice() < 10000) { <span>Try adjusting your search
+    or filter criteria.</span>
+    <button type="button" class="btn btn-sm btn-outline-warning ms-2" (click)="onClearFilters()">
+      Clear Filters
+    </button>
+    } @else {
+    <span>No products available.</span>
+    }
+</div>
+}
+
+<!-- Products Grid -->
+@if (!loading() && filteredCount() > 0) {
+<ul class="products-grid list-unstyled" role="list">
+  @for (product of filteredProducts(); track product.id) {
+  <li role="listitem">
+    <app-product-card [product]="product" [disabled]="isEditMode()" (edit)="onEditProduct($event)"
+      (delete)="onDeleteProduct($event)">
+    </app-product-card>
+  </li>
+  }
+</ul>
+}
+
+<!-- Edit/Create Modal -->
+@if (isEditMode()) {
+<div class="modal-overlay" (click)="onCancelEdit()" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="productModalTitle">{{ isCreating() ? 'Add New Product' : 'Edit Product' }}</h2>
+      <button class="close-btn" (click)="onCancelEdit()">×</button>
+    </div>
+
+    @if (productError()) {
+    <div class="alert alert-danger">
+      <strong>Error:</strong> {{ productError() }}
+    </div>
+    }
+
+    <form [formGroup]="editForm" (ngSubmit)="onSaveProduct()" class="modal-body" role="form"
+      aria-labelledby="productModalTitle">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input id="title" type="text" class="form-control" formControlName="title" placeholder="Product title"
+          [attr.aria-invalid]="editForm.get('title')?.invalid ? 'true' : null"
+          [attr.aria-describedby]="editForm.get('title')?.invalid ? 'titleError' : null" />
+        @if (editForm.get('title')?.invalid && editForm.get('title')?.touched) {
+        <small id="titleError" class="form-error">Title is required (min 3 characters)</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="price">Price</label>
+        <input id="price" type="number" class="form-control" formControlName="price" placeholder="0.00" step="0.01"
+          [attr.aria-invalid]="editForm.get('price')?.invalid ? 'true' : null"
+          [attr.aria-describedby]="editForm.get('price')?.invalid ? 'priceError' : null" />
+        @if (editForm.get('price')?.invalid && editForm.get('price')?.touched) {
+        <small id="priceError" class="form-error">Price is required and must be positive</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="category">Category</label>
+        <input id="category" type="text" class="form-control" formControlName="category"
+          placeholder="electronics, clothing, etc."
+          [attr.aria-invalid]="editForm.get('category')?.invalid ? 'true' : null"
+          [attr.aria-describedby]="editForm.get('category')?.invalid ? 'categoryError' : null" />
+        @if (editForm.get('category')?.invalid && editForm.get('category')?.touched) {
+        <small id="categoryError" class="form-error">Category is required</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" class="form-control" formControlName="description" placeholder="Product description"
+          rows="4" [attr.aria-invalid]="editForm.get('description')?.invalid ? 'true' : null"
+          [attr.aria-describedby]="editForm.get('description')?.invalid ? 'descriptionError' : null"></textarea>
+        @if (editForm.get('description')?.invalid && editForm.get('description')?.touched) {
+        <small id="descriptionError" class="form-error">Description is required (min 10 characters)</small>
+        }
+      </div>
+
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-success" [disabled]="!editForm.valid || productLoading()">
+          {{ productLoading() ? 'Saving...' : 'Save Product' }}
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="onCancelEdit()" [disabled]="productLoading()">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+}

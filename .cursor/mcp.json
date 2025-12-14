@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "angular-cli": {
+      "command": "ng",
+      "args": [
+        "mcp"
+      ],
+      "description": "Angular CLI MCP Server",
+      "autoStart": true
+    },
+    "angular-best-practices": {
+      "command": "ng",
+      "args": [
+        "mcp",
+        "--read-only"
+      ],
+      "description": "Angular Best Practices Reference"
+    }
+  }
+}
