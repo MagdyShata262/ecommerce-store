@@ -8,7 +8,7 @@ import { ProductsService } from '../../../../core/services/products.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './product-detail.component.html',
-  styleUrl: './product-detail.component.css',
+  styleUrls: ['./product-detail.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductDetailComponent {

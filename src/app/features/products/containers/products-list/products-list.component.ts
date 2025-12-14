@@ -22,7 +22,7 @@ import { ProductCardComponent } from '../../components/product-card/product-card
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, ProductCardComponent],
   templateUrl: './products-list.component.html',
-  styleUrl: './products-list.component.css',
+  styleUrls: ['./products-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductsListComponent implements OnInit {

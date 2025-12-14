@@ -8,7 +8,7 @@ import { Product } from '../../../../core/services/products.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './product-card.component.html',
-  styleUrl: './product-card.component.css',
+  styleUrls: ['./product-card.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductCardComponent {

@@ -9,7 +9,7 @@ import { initWebVitals } from './shared/utils/web-vitals.util';
   selector: 'app-root',
   imports: [RouterOutlet, HeaderComponent, FooterComponent],
   templateUrl: './app.html',
-  styleUrl: './app.css',
+  styleUrls: ['./app.css'],
 })
 export class App {
   protected readonly title = signal('ecommerce-store');
