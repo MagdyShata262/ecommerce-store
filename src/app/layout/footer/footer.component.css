@@ -1,0 +1,128 @@
+/* Footer Styling */
+
+.footer {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    border-top: 2px solid #007bff;
+    margin-top: auto;
+}
+
+.footer-title {
+    font-weight: 600;
+    color: #007bff;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+.footer-text {
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.footer-link {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+    padding: 0.25rem 0;
+}
+
+.footer-link:hover {
+    color: #007bff;
+    transform: translateX(4px);
+}
+
+.footer-link-small {
+    font-size: 0.9rem;
+}
+
+/* List Styling */
+.list-unstyled li {
+    margin-bottom: 0.75rem;
+}
+
+/* Social Links */
+.social-links {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 123, 255, 0.2);
+    color: #007bff;
+    border-radius: 50%;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.social-link:hover {
+    background-color: #007bff;
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+}
+
+/* Divider */
+.footer-divider {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 0;
+}
+
+/* Bottom Footer */
+.footer-bottom {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .footer {
+        padding-top: 2rem !important;
+    }
+
+    .footer-title {
+        font-size: 1rem;
+    }
+
+    .footer-text {
+        font-size: 0.9rem;
+    }
+
+    .social-links {
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .social-link {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+
+    .row {
+        text-align: center;
+    }
+
+    .text-center {
+        text-align: center !important;
+    }
+}
+
+/* Dark Mode Enhancement */
+@media (prefers-color-scheme: dark) {
+    .footer-text {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .footer-bottom {
+        color: rgba(255, 255, 255, 0.7);
+    }
+}

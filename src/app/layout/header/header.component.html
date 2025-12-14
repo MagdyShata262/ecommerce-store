@@ -1,0 +1,73 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+    <div class="container-fluid">
+        <!-- Brand/Logo -->
+        <a class="navbar-brand fw-bold" routerLink="/" routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }">
+            🛍️ E-Shop
+        </a>
+
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navigation Items -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto gap-2">
+                <!-- Home Link -->
+                <li class="nav-item">
+                    <a class="nav-link" routerLink="/" routerLinkActive="active"
+                        [routerLinkActiveOptions]="{ exact: true }" aria-label="Home">
+                        🏠 Home
+                    </a>
+                </li>
+
+                <!-- Products Link -->
+                <li class="nav-item">
+                    <a class="nav-link" routerLink="/products" routerLinkActive="active" aria-label="Products">
+                        📦 Products
+                    </a>
+                </li>
+
+                <!-- Cart Link with Badge -->
+                <li class="nav-item">
+                    <a class="nav-link position-relative" routerLink="/cart" routerLinkActive="active"
+                        aria-label="Shopping Cart">
+                        🛒 Cart
+                        @if (cartItemCount() > 0) {
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ cartItemCount() }}
+                            <span class="visually-hidden">items in cart</span>
+                        </span>
+                        }
+                    </a>
+                </li>
+
+                <!-- Divider -->
+                <li class="nav-item">
+                    <span class="nav-link disabled">|</span>
+                </li>
+
+                <!-- Authentication Links -->
+                @if (!isLoggedIn()) {
+                <!-- Login Button -->
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-light btn-sm ms-2" routerLink="/auth"
+                        aria-label="Login to your account">
+                        🔐 Login
+                    </a>
+                </li>
+                } @else {
+                <!-- Logout Button -->
+                <li class="nav-item">
+                    <button class="nav-link btn btn-outline-danger btn-sm ms-2" (click)="onLogout()" type="button"
+                        aria-label="Logout from your account">
+                        🚪 Logout
+                    </button>
+                </li>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>

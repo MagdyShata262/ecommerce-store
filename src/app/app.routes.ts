@@ -36,7 +36,10 @@ export const routes: Routes = [
   // Cart routes
   // {
   //   path: 'cart',
-  //   loadChildren: () => import('./features/cart/cart.routes').then((m) => m.CART_ROUTES),
+  //   loadChildren: () =>
+  //     import('./features/products/components/product-card/product-card.component').then(
+  //       (m) => m.ProductCardComponent
+  //     ),
   //   data: { title: 'Shopping Cart' },
   // },
 

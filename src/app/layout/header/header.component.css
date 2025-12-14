@@ -1,0 +1,122 @@
+/* Navbar Customization */
+.navbar {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    border-bottom: 2px solid #007bff;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+}
+
+.navbar-brand:hover {
+    color: #007bff !important;
+}
+
+/* Navigation Links */
+.nav-link {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    padding: 0.5rem 0.75rem !important;
+}
+
+.nav-link:hover {
+    color: #007bff !important;
+}
+
+.nav-link.active {
+    color: #007bff !important;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: calc(0.5rem - 2px) !important;
+}
+
+/* Disabled Link (Divider) */
+.nav-link.disabled {
+    color: rgba(255, 255, 255, 0.3) !important;
+    cursor: default;
+    padding: 0.5rem 0.25rem !important;
+}
+
+/* Button Styling */
+.btn-outline-light {
+    color: rgba(255, 255, 255, 0.8);
+    border-color: rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+    color: #fff;
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.btn-outline-danger {
+    color: #ff6b6b;
+    border-color: #ff6b6b;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-danger:hover {
+    color: #fff;
+    border-color: #ff4d4d;
+    background-color: #ff4d4d;
+}
+
+/* Badge Styling */
+.badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 991px) {
+    .navbar-nav {
+        gap: 0.5rem !important;
+        margin-top: 1rem;
+    }
+
+    .nav-link {
+        padding: 0.75rem 0 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-link.active {
+        border-bottom: 2px solid #007bff !important;
+        padding-bottom: calc(0.75rem - 2px) !important;
+    }
+
+    .nav-link.disabled {
+        display: none;
+    }
+
+    .btn-outline-light,
+    .btn-outline-danger {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Sticky Top Offset */
+.sticky-top {
+    z-index: 1030;
+}
+
+/* Shadow Effect */
+.shadow-sm {
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3) !important;
+}
