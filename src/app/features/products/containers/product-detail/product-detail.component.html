@@ -1,0 +1,96 @@
+<div class="product-detail-container">
+  <!-- Loading State -->
+  @if (productLoading()) {
+  <div class="alert alert-info" role="status" aria-live="polite">
+    <div class="spinner-border spinner-border-sm me-2" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <span>Loading product details...</span>
+  </div>
+  }
+
+  <!-- Error State -->
+  @if (productError()) {
+  <div class="alert alert-danger" role="alert">
+    <strong>⚠️ Error:</strong> {{ productError() }}
+  </div>
+  }
+
+  <!-- Product Not Found -->
+  @if (!productLoading() && !productError() && !currentProduct()) {
+  <div class="alert alert-warning" role="alert">
+    <strong>ℹ️ Product Not Found</strong>
+    <p>The product you're looking for does not exist or has been removed.</p>
+    <a routerLink="/products" class="btn btn-outline-warning mt-2">Back to Products</a>
+  </div>
+  }
+
+  <!-- Product Details -->
+  @if (currentProduct(); as product) {
+  <article class="product-detail">
+    <!-- Back Link & Header -->
+    <div class="product-header">
+      <a routerLink="/products" class="back-link">
+        ← Back to Products
+      </a>
+      <h1>{{ product.title }}</h1>
+      <div class="product-meta">
+        <span class="category badge">{{ product.category | titlecase }}</span>
+        <span class="rating" aria-label="Rating">
+          ⭐ {{ product.rating.rate | number: '1.1-1' }}
+          <small>({{ product.rating.count }} reviews)</small>
+        </span>
+      </div>
+    </div>
+
+    <!-- Product Content -->
+    <div class="product-body">
+      <!-- Image Section -->
+      <div class="product-image-section">
+        <div class="product-image">
+          <img [src]="product.image" [alt]="product.title" class="img-fluid" loading="lazy" />
+        </div>
+      </div>
+
+      <!-- Info Section -->
+      <div class="product-info-section">
+        <!-- Price -->
+        <div class="price-section">
+          <h2 class="price">${{ product.price | number: '1.2-2' }}</h2>
+        </div>
+
+        <!-- Description -->
+        <div class="description-section">
+          <h3>Description</h3>
+          <p>{{ product.description }}</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="actions">
+          <button class="btn btn-primary btn-lg" type="button">
+            🛒 Add to Cart
+          </button>
+          <button class="btn btn-outline-secondary btn-lg" type="button">
+            ❤️ Add to Wishlist
+          </button>
+        </div>
+
+        <!-- Product Details -->
+        <div class="product-details-table">
+          <h3>Product Details</h3>
+          <dl>
+            <dt>Category</dt>
+            <dd>{{ product.category | titlecase }}</dd>
+            <dt>Price</dt>
+            <dd>${{ product.price | number: '1.2-2' }}</dd>
+            <dt>Rating</dt>
+            <dd>{{ product.rating.rate | number: '1.1-1' }} out of 5</dd>
+            <dt>Reviews</dt>
+            <dd>{{ product.rating.count }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </article>
+  }
+</div>

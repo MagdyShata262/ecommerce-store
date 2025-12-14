@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, of } from 'rxjs';
 
@@ -18,20 +18,100 @@ export interface Product {
 export type CreateProductPayload = Omit<Product, 'id' | 'rating'>;
 export type UpdateProductPayload = Partial<CreateProductPayload>;
 
+export type SortField = 'name' | 'price' | 'rating';
+export type SortOrder = 'asc' | 'desc';
+
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
   readonly #http = inject(HttpClient);
   readonly #apiUrl = 'https://fakestoreapi.com/products';
 
-  // Signals for list operations
+  // ============================================
+  // PRODUCTS & LOADING STATE
+  // ============================================
   readonly products = signal<Product[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  // Signals for single product operations
+  // ============================================
+  // SINGLE PRODUCT OPERATIONS
+  // ============================================
   readonly currentProduct = signal<Product | null>(null);
   readonly productLoading = signal(false);
   readonly productError = signal<string | null>(null);
+
+  // ============================================
+  // FILTER & SEARCH STATE (Signals)
+  // ============================================
+  readonly searchTerm = signal('');
+  readonly selectedCategory = signal('');
+  readonly minPrice = signal(0);
+  readonly maxPrice = signal(10000);
+  readonly sortBy = signal<SortField>('name');
+  readonly sortOrder = signal<SortOrder>('asc');
+
+  // ============================================
+  // COMPUTED DERIVED STATE
+  // ============================================
+  /**
+   * Extract unique categories from all products
+   */
+  readonly categories = computed(() => {
+    const cats = new Set(this.products().map((p) => p.category));
+    return Array.from(cats).sort();
+  });
+
+  /**
+   * Filter, search, and sort products based on current filter signals
+   */
+  readonly filteredProducts = computed(() => {
+    let filtered = this.products();
+
+    // Search filter (title, description, category)
+    if (this.searchTerm()) {
+      const term = this.searchTerm().toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.title.toLowerCase().includes(term) ||
+          p.description.toLowerCase().includes(term) ||
+          p.category.toLowerCase().includes(term)
+      );
+    }
+
+    // Category filter
+    if (this.selectedCategory()) {
+      filtered = filtered.filter((p) => p.category === this.selectedCategory());
+    }
+
+    // Price range filter
+    filtered = filtered.filter((p) => p.price >= this.minPrice() && p.price <= this.maxPrice());
+
+    // Sort
+    filtered = [...filtered].sort((a, b) => {
+      let comparison = 0;
+
+      switch (this.sortBy()) {
+        case 'name':
+          comparison = a.title.localeCompare(b.title);
+          break;
+        case 'price':
+          comparison = a.price - b.price;
+          break;
+        case 'rating':
+          comparison = a.rating.rate - b.rating.rate;
+          break;
+      }
+
+      return this.sortOrder() === 'asc' ? comparison : -comparison;
+    });
+
+    return filtered;
+  });
+
+  /**
+   * Count of filtered products
+   */
+  readonly filteredCount = computed(() => this.filteredProducts().length);
 
   /**
    * GET /products - Load all products
@@ -172,6 +252,73 @@ export class ProductsService {
   clearCurrentProduct(): void {
     this.currentProduct.set(null);
     this.productError.set(null);
+  }
+
+  // ============================================
+  // FILTER & SEARCH METHODS
+  // ============================================
+
+  /**
+   * Update search term (called with debouncing in component)
+   */
+  setSearchTerm(term: string): void {
+    this.searchTerm.set(term.trim());
+  }
+
+  /**
+   * Update selected category filter
+   */
+  setCategory(category: string): void {
+    this.selectedCategory.set(category);
+  }
+
+  /**
+   * Update price range filter
+   */
+  setPriceRange(min: number, max: number): void {
+    this.minPrice.set(Math.max(0, min));
+    this.maxPrice.set(Math.max(min, max));
+  }
+
+  /**
+   * Update sort field and toggle order if same field is clicked
+   */
+  setSort(field: SortField): void {
+    if (this.sortBy() === field) {
+      // Toggle sort order if same field clicked
+      this.sortOrder.set(this.sortOrder() === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New sort field, reset to ascending
+      this.sortBy.set(field);
+      this.sortOrder.set('asc');
+    }
+  }
+
+  /**
+   * Clear all filters and reset to defaults
+   */
+  clearFilters(): void {
+    this.searchTerm.set('');
+    this.selectedCategory.set('');
+    this.minPrice.set(0);
+    this.maxPrice.set(10000);
+    this.sortBy.set('name');
+    this.sortOrder.set('asc');
+  }
+
+  /**
+   * Refresh products (reload from API)
+   */
+  refresh(): void {
+    this.loadProducts();
+  }
+
+  /**
+   * Get sort indicator string for UI display
+   */
+  getSortIndicator(field: SortField): string {
+    if (this.sortBy() !== field) return '';
+    return this.sortOrder() === 'asc' ? ' ▲' : ' ▼';
   }
 
   /**

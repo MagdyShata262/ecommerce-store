@@ -12,6 +12,10 @@
             <span class="badge bg-warning text-dark">★ {{ product.rating.rate }}</span>
         </div>
         <div class="product-actions d-grid gap-2">
+            <a [routerLink]="['/products', product.id]" class="btn btn-info btn-sm"
+                aria-label="View details for {{ product.title }}">
+                👁️ View Details
+            </a>
             <button type="button" class="btn btn-warning btn-sm" (click)="edit.emit(product.id)" [disabled]="disabled"
                 aria-label="Edit {{ product.title }}">
                 ✏️ Edit

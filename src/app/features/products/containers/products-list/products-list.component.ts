@@ -28,7 +28,11 @@ import { ProductCardComponent } from '../../components/product-card/product-card
 export class ProductsListComponent implements OnInit {
   readonly #productsService = inject(ProductsService);
   readonly #fb = inject(FormBuilder);
+  readonly #confirm = inject(ConfirmService);
 
+  // ============================================
+  // SERVICE SIGNALS (Read-only proxies)
+  // ============================================
   readonly products = this.#productsService.products;
   readonly loading = this.#productsService.loading;
   readonly error = this.#productsService.error;
@@ -37,77 +41,27 @@ export class ProductsListComponent implements OnInit {
   readonly productLoading = this.#productsService.productLoading;
   readonly productError = this.#productsService.productError;
 
-  // UI state
+  // Filter signals
+  readonly searchTerm = this.#productsService.searchTerm;
+  readonly selectedCategory = this.#productsService.selectedCategory;
+  readonly minPrice = this.#productsService.minPrice;
+  readonly maxPrice = this.#productsService.maxPrice;
+  readonly sortBy = this.#productsService.sortBy;
+  readonly sortOrder = this.#productsService.sortOrder;
+
+  // Computed signals from service
+  readonly categories = this.#productsService.categories;
+  readonly filteredProducts = this.#productsService.filteredProducts;
+  readonly filteredCount = this.#productsService.filteredCount;
+
+  // ============================================
+  // LOCAL UI STATE (Component only)
+  // ============================================
   readonly isEditMode = signal(false);
   readonly isCreating = signal(false);
-
-  // Search and filter state
-  readonly searchTerm = signal('');
-  readonly selectedCategory = signal('');
-  readonly sortBy = signal<'name' | 'price' | 'rating'>('name');
-  readonly sortOrder = signal<'asc' | 'desc'>('asc');
-  readonly minPrice = signal(0);
-  readonly maxPrice = signal(10000);
-
-  // Computed filtered and sorted products
-  readonly categories = computed(() => {
-    const cats = new Set(this.products().map((p) => p.category));
-    return Array.from(cats).sort();
-  });
-
-  readonly filteredProducts = computed(() => {
-    let filtered = this.products();
-
-    // Search filter
-    if (this.searchTerm()) {
-      const term = this.searchTerm().toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.title.toLowerCase().includes(term) ||
-          p.description.toLowerCase().includes(term) ||
-          p.category.toLowerCase().includes(term)
-      );
-    }
-
-    // Category filter
-    if (this.selectedCategory()) {
-      filtered = filtered.filter((p) => p.category === this.selectedCategory());
-    }
-
-    // Price range filter
-    filtered = filtered.filter((p) => p.price >= this.minPrice() && p.price <= this.maxPrice());
-
-    // Sort
-    filtered = [...filtered].sort((a, b) => {
-      let comparison = 0;
-
-      switch (this.sortBy()) {
-        case 'name':
-          comparison = a.title.localeCompare(b.title);
-          break;
-        case 'price':
-          comparison = a.price - b.price;
-          break;
-        case 'rating':
-          comparison = a.rating.rate - b.rating.rate;
-          break;
-      }
-
-      return this.sortOrder() === 'asc' ? comparison : -comparison;
-    });
-
-    return filtered;
-  });
-
-  readonly filteredCount = computed(() => this.filteredProducts().length);
-
-  // For skeleton loading placeholders
   readonly skeletonIndices = computed(() => Array.from({ length: 6 }, (_, i) => i));
 
   editForm: FormGroup;
-
-  readonly #confirm = inject(ConfirmService);
-
   private _searchTimer?: ReturnType<typeof setTimeout>;
 
   constructor() {
@@ -154,10 +108,54 @@ export class ProductsListComponent implements OnInit {
     this.#productsService.loadProducts();
   }
 
+  // ============================================
+  // USER INTERACTION HANDLERS
+  // ============================================
+
+  onSearchChange(term: string): void {
+    // Debounce search input
+    clearTimeout(this._searchTimer);
+    this._searchTimer = setTimeout(() => this.#productsService.setSearchTerm(term), 250);
+  }
+
+  onCategoryChange(category: string): void {
+    this.#productsService.setCategory(category);
+  }
+
+  onPriceRangeChange(min: number, max: number): void {
+    this.#productsService.setPriceRange(min, max);
+  }
+
+  onSortChange(field: 'name' | 'price' | 'rating'): void {
+    this.#productsService.setSort(field);
+  }
+
+  onClearFilters(): void {
+    this.#productsService.clearFilters();
+  }
+
+  onRefresh(): void {
+    this.#productsService.refresh();
+  }
+
+  getSortIndicator(field: 'name' | 'price' | 'rating'): string {
+    return this.#productsService.getSortIndicator(field);
+  }
+
+  // ============================================
+  // PRODUCT CRUD HANDLERS
+  // ============================================
+
+  onAddProduct(): void {
+    this.isEditMode.set(true);
+    this.isCreating.set(true);
+    this.editForm.reset();
+    this.#productsService.clearCurrentProduct();
+  }
+
   onEditProduct(id: number): void {
     this.isEditMode.set(true);
     this.isCreating.set(false);
-    // load product; form will be patched by the effect when available
     this.#productsService.getProductById(id);
   }
 
@@ -166,13 +164,6 @@ export class ProductsListComponent implements OnInit {
     if (confirmed) {
       this.#productsService.deleteProduct(id);
     }
-  }
-
-  onAddProduct(): void {
-    this.isEditMode.set(true);
-    this.isCreating.set(true);
-    this.editForm.reset();
-    this.#productsService.clearCurrentProduct();
   }
 
   onSaveProduct(): void {
@@ -194,55 +185,14 @@ export class ProductsListComponent implements OnInit {
     this.#productsService.clearCurrentProduct();
   }
 
-  // Search functions
-  onSearchChange(term: string): void {
-    // debounce to avoid recomputing on every keystroke
-    clearTimeout(this._searchTimer);
-    this._searchTimer = setTimeout(() => this.searchTerm.set(term.trim()), 250);
-  }
+  // ============================================
+  // UTILITY METHODS
+  // ============================================
 
-  onCategoryChange(category: string): void {
-    this.selectedCategory.set(category);
-  }
-
-  onSortChange(sortField: 'name' | 'price' | 'rating'): void {
-    if (this.sortBy() === sortField) {
-      this.sortOrder.set(this.sortOrder() === 'asc' ? 'desc' : 'asc');
-    } else {
-      this.sortBy.set(sortField);
-      this.sortOrder.set('asc');
-    }
-  }
-
-  onPriceRangeChange(min: number, max: number): void {
-    this.minPrice.set(Math.max(0, min));
-    this.maxPrice.set(Math.max(min, max));
-  }
-
-  onClearFilters(): void {
-    this.searchTerm.set('');
-    this.selectedCategory.set('');
-    this.sortBy.set('name');
-    this.sortOrder.set('asc');
-    this.minPrice.set(0);
-    this.maxPrice.set(10000);
-  }
-
-  onRefresh(): void {
-    this.#productsService.loadProducts();
-  }
-
-  getSortIndicator(field: 'name' | 'price' | 'rating'): string {
-    if (this.sortBy() !== field) return '';
-    return this.sortOrder() === 'asc' ? ' ▲' : ' ▼';
-  }
-
-  // trackBy for performance when rendering lists
-  trackByProduct(_: number, p: Product) {
+  trackByProduct(_: number, p: Product): number {
     return p.id;
   }
 
-  // Helper to convert string to number in templates
   toNumber(val: string | number): number {
     return typeof val === 'string' ? parseFloat(val) : val;
   }
